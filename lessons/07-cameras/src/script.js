@@ -1,5 +1,6 @@
 import './style.css'
 import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 /*
  * Cursor
@@ -64,6 +65,17 @@ scene.add(camera)
 // camera.lookAt(mesh.position)
 // scene.add(camera)
 
+// Controls
+const controls = new OrbitControls(camera, canvas)
+// by default the camera is looking at the center of the screen
+// change the target property ( is a Vector3 )
+// controls.target.y = 2
+// controls.update()
+
+// Damping will smooth the animation
+// need to be updated each frames in tick function
+controls.enableDamping = true
+
 // Renderer
 const renderer = new THREE.WebGLRenderer({
     canvas: canvas
@@ -79,11 +91,8 @@ const tick = () => {
     // Update objects
     // mesh.rotation.y = elapsedTime;
 
-    // Update camera
-    camera.position.x = Math.sin(cursor.x * Math.PI * 2) * 2
-    camera.position.z = Math.cos(cursor.x * Math.PI * 2) * 2
-    camera.position.y = cursor.y * 3
-    camera.lookAt(mesh.position)
+    // Update control
+    controls.update()
 
     // Render
     renderer.render(scene, camera)
