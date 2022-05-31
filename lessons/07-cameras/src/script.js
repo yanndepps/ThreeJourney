@@ -1,9 +1,18 @@
-/*
- * 22.18
- */
-
 import './style.css'
 import * as THREE from 'three'
+
+/*
+ * Cursor
+ */
+const cursor = {
+    x: 0,
+    y: 0
+}
+
+window.addEventListener('mousemove', (e) => {
+    cursor.x = e.clientX / sizes.width - 0.5
+    cursor.y = - (e.clientY / sizes.height - 0.5)
+})
 
 /**
  * Base
@@ -35,7 +44,7 @@ scene.add(mesh)
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 1, 1000)
 // camera.position.x = 2
 // camera.position.y = 2
-camera.position.z = 2
+camera.position.z = 3
 // get the distance of our camera
 // console.log(camera.position.length)
 camera.lookAt(mesh.position)
@@ -69,6 +78,12 @@ const tick = () => {
 
     // Update objects
     // mesh.rotation.y = elapsedTime;
+
+    // Update camera
+    camera.position.x = Math.sin(cursor.x * Math.PI * 2) * 2
+    camera.position.z = Math.cos(cursor.x * Math.PI * 2) * 2
+    camera.position.y = cursor.y * 3
+    camera.lookAt(mesh.position)
 
     // Render
     renderer.render(scene, camera)
