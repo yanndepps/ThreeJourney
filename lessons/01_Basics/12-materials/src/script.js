@@ -12,6 +12,7 @@ const gui = new GUI({ title: 'material controls' })
  * Textures
  */
 const textureLoader = new THREE.TextureLoader()
+const cubeTextureLoader = new THREE.CubeTextureLoader()
 
 const doorColorTex = textureLoader.load('/textures/door/color.jpg')
 const doorAlphaTex = textureLoader.load('/textures/door/alpha.jpg')
@@ -25,6 +26,15 @@ const gradTex = textureLoader.load('/textures/gradients/5.jpg')
 gradTex.minFilter = THREE.NearestFilter
 gradTex.magFilter = THREE.NearestFilter
 gradTex.generateMipmaps = false
+
+const environmentMapTex = cubeTextureLoader.load([
+    '/textures/environmentMaps/0/px.jpg',
+    '/textures/environmentMaps/0/nx.jpg',
+    '/textures/environmentMaps/0/py.jpg',
+    '/textures/environmentMaps/0/ny.jpg',
+    '/textures/environmentMaps/0/pz.jpg',
+    '/textures/environmentMaps/0/nz.jpg',
+])
 
 
 /**
@@ -68,20 +78,34 @@ const scene = new THREE.Scene()
 //     gradientMap: gradTex
 // })
 
-const material = new THREE.MeshStandardMaterial({
-    metalness: 0.95,
-    roughness: 0.75,
-    map: doorColorTex,
-    aoMap: doorAmbientOcclusionTex,
-    aoMapIntensity: 1,
-    displacementMap: doorHeightTex,
-    displacementScale: 0.05,
-    metalnessMap: doorMetalnessTex,
-    roughnessMap: doorRoughnessTex,
-    normalMap: doorNormalTex,
-    normalScale: { x: 0.5, y: 0.5 },
-    transparent: true,
-    alphaMap: doorAlphaTex,
+// const material = new THREE.MeshStandardMaterial({
+//     metalness: 0.95,
+//     roughness: 0.75,
+//     map: doorColorTex,
+//     aoMap: doorAmbientOcclusionTex,
+//     aoMapIntensity: 1,
+//     displacementMap: doorHeightTex,
+//     displacementScale: 0.05,
+//     metalnessMap: doorMetalnessTex,
+//     roughnessMap: doorRoughnessTex,
+//     normalMap: doorNormalTex,
+//     normalScale: { x: 0.5, y: 0.5 },
+//     transparent: true,
+//     alphaMap: doorAlphaTex,
+//     side: THREE.DoubleSide
+// })
+
+// const material = new THREE.MeshStandardMaterial({
+//     metalness: 0.7,
+//     roughness: 0.2,
+//     envMap: environmentMapTex,
+//     side: THREE.DoubleSide
+// })
+
+const material = new THREE.MeshPhysicalMaterial({
+    metalness: 0.7,
+    roughness: 0.2,
+    envMap: environmentMapTex,
     side: THREE.DoubleSide
 })
 
@@ -95,15 +119,15 @@ gui.add(material, 'roughness')
     .max(1)
     .step(0.01)
 
-gui.add(material, 'aoMapIntensity')
-    .min(0)
-    .max(2)
-    .step(0.01)
+// gui.add(material, 'aoMapIntensity')
+//     .min(0)
+//     .max(2)
+//     .step(0.01)
 
-gui.add(material, 'displacementScale')
-    .min(0.05)
-    .max(1)
-    .step(0.01)
+// gui.add(material, 'displacementScale')
+//     .min(0.05)
+//     .max(1)
+//     .step(0.01)
 
 
 const sphere = new THREE.Mesh(
