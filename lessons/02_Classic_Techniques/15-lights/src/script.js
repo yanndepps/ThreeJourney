@@ -29,6 +29,57 @@ scene.add(directionalLight)
 const hemisphereLight = new THREE.HemisphereLight(0xff0000, 0x0000ff, 0.3)
 scene.add(hemisphereLight)
 
+const pointLight = new THREE.PointLight(0xff9000, 0.5, 10, 2)
+pointLight.position.set(1, -0.5, 1)
+scene.add(pointLight)
+
+const rectAreaLight = new THREE.RectAreaLight(0x4e00ff, 2, 1, 1)
+rectAreaLight.position.set(-1.5, 0, 1.5)
+rectAreaLight.lookAt(new THREE.Vector3())
+scene.add(rectAreaLight)
+
+const spotLight = new THREE.SpotLight(0x78ff00, 0.5, 10, Math.PI * 0.1, 0.25, 1)
+spotLight.position.set(0, 2, 3)
+scene.add(spotLight)
+spotLight.target.position.x = -0.75
+scene.add(spotLight.target)
+
+// Lights Helpers
+const hemiLightHelp = new THREE.HemisphereLightHelper(hemisphereLight, 0.2)
+const dirLightHelp = new THREE.DirectionalLightHelper(directionalLight, 0.2)
+const pointLightHelp = new THREE.PointLightHelper(pointLight, 0.2)
+scene.add(hemiLightHelp)
+scene.add(dirLightHelp)
+scene.add(pointLightHelp)
+
+
+gui.add(pointLightHelp, 'visible')
+  .name('point helper')
+
+gui.add(dirLightHelp, 'visible')
+  .name('dir helper')
+
+gui.add(hemiLightHelp, 'visible')
+  .name('hemi helper')
+
+gui.add(spotLight, 'intensity')
+  .name('spot')
+  .min(0)
+  .max(1)
+  .step(0.001)
+
+gui.add(rectAreaLight, 'intensity')
+  .name('area')
+  .min(0)
+  .max(2)
+  .step(0.001)
+
+gui.add(pointLight, 'intensity')
+  .name('point')
+  .min(0)
+  .max(1)
+  .step(0.001)
+
 gui.add(hemisphereLight, 'intensity')
   .name('hemi')
   .min(0)
