@@ -19,15 +19,48 @@ const scene = new THREE.Scene()
  * Textures
  */
 const textureLoader = new THREE.TextureLoader()
+const particleTex = textureLoader.load('/textures/particles/2.png')
 
-/**
- * Test cube
- */
-const cube = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial()
+// Particles
+// geometry
+// const particlesGeo = new THREE.SphereGeometry(1, 32, 32)
+const particlesGeo = new THREE.BufferGeometry()
+const count = 5000
+const positions = new Float32Array(count * 3)
+const colors = new Float32Array(count * 3)
+
+for (let i = 0; i < count * 3; i++) {
+    positions[i] = (Math.random() - 0.5) * 10
+    colors[i] = Math.random()
+}
+
+particlesGeo.setAttribute(
+    'position',
+    new THREE.BufferAttribute(positions, 3)
 )
-scene.add(cube)
+
+particlesGeo.setAttribute(
+    'color',
+    new THREE.BufferAttribute(colors, 3)
+)
+
+// material
+const particlesMat = new THREE.PointsMaterial({
+    size: 0.1,
+    sizeAttenuation: true,
+    // color: '#ff88cc',
+    transparent: true,
+    alphaMap: particleTex,
+    // alphaTest: 0.001
+    // depthTest: false
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    vertexColors: true
+})
+
+// mesh
+const particles = new THREE.Points(particlesGeo, particlesMat)
+scene.add(particles)
 
 /**
  * Sizes
@@ -37,8 +70,7 @@ const sizes = {
     height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
+window.addEventListener('resize', () => {
     // Update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
@@ -78,9 +110,11 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  */
 const clock = new THREE.Clock()
 
-const tick = () =>
-{
+const tick = () => {
     const elapsedTime = clock.getElapsedTime()
+
+    // particles
+
 
     // Update controls
     controls.update()
