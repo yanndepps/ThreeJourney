@@ -18,20 +18,49 @@ const scene = new THREE.Scene()
 // Galaxy
 // object that contains all the parameters
 const parameters = {}
-parameters.count = 1000
-parameters.size = 0.02
+parameters.count = 100000
+parameters.size = 0.01
+parameters.radius = 5
+parameters.branches = 3
+parameters.spin = 1
+parameters.randomness = 0.2
+parameters.randPower = 3
+
+// move geo, material and points outside of the function
+let geo = null
+let material = null
+let points = null
 
 // Galaxy function
 const generateGalaxy = () => {
+    // destroy old galaxies
+    if (points !== null) {
+        geo.dispose()
+        material.dispose()
+        scene.remove(points)
+    }
+
     // geometry
-    const geo = new THREE.BufferGeometry()
+    geo = new THREE.BufferGeometry()
     const positions = new Float32Array(parameters.count * 3)
 
     for (let i = 0; i < parameters.count; i++) {
         const i3 = i * 3
-        positions[i3 + 0] = (Math.random() - 0.5) * 3
-        positions[i3 + 1] = (Math.random() - 0.5) * 3
-        positions[i3 + 2] = (Math.random() - 0.5) * 3
+        const radius = Math.random() * parameters.radius
+        const spinAngle = radius * parameters.spin
+        const branchAngle = (i % parameters.branches) / parameters.branches * Math.PI * 2
+        const randomX = Math.pow(Math.random(), parameters.randPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius
+        const randomY = Math.pow(Math.random(), parameters.randPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius
+        const randomZ = Math.pow(Math.random(), parameters.randPower) * (Math.random() < 0.5 ? 1 : -1) * parameters.randomness * radius
+
+        // log the angle value
+        // if (i < 20) {
+        //     console.log('i -> ' + i, 'angle -> ' + branchAngle)
+        // }
+
+        positions[i3 + 0] = Math.cos(branchAngle + spinAngle) * radius + randomX
+        positions[i3 + 1] = randomY
+        positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ
     }
 
     geo.setAttribute(
@@ -40,7 +69,7 @@ const generateGalaxy = () => {
     )
 
     // material
-    const material = new THREE.PointsMaterial({
+    material = new THREE.PointsMaterial({
         size: parameters.size,
         sizeAttenuation: true,
         depthWrite: false,
@@ -48,7 +77,7 @@ const generateGalaxy = () => {
     })
 
     // points
-    const points = new THREE.Points(geo, material)
+    points = new THREE.Points(geo, material)
     scene.add(points)
 }
 generateGalaxy()
@@ -56,13 +85,43 @@ generateGalaxy()
 // Gui
 gui.add(parameters, 'count')
     .min(100)
-    .max(10000)
+    .max(100000)
     .step(100)
     .onFinishChange(generateGalaxy)
 
 gui.add(parameters, 'size')
     .min(0.001)
     .max(0.1)
+    .step(0.001)
+    .onFinishChange(generateGalaxy)
+
+gui.add(parameters, 'radius')
+    .min(0.01)
+    .max(20)
+    .step(0.01)
+    .onFinishChange(generateGalaxy)
+
+gui.add(parameters, 'branches')
+    .min(2)
+    .max(20)
+    .step(1)
+    .onFinishChange(generateGalaxy)
+
+gui.add(parameters, 'spin')
+    .min(-5)
+    .max(5)
+    .step(0.001)
+    .onFinishChange(generateGalaxy)
+
+gui.add(parameters, 'randomness')
+    .min(0)
+    .max(2)
+    .step(0.001)
+    .onFinishChange(generateGalaxy)
+
+gui.add(parameters, 'randPower')
+    .min(1)
+    .max(10)
     .step(0.001)
     .onFinishChange(generateGalaxy)
 
