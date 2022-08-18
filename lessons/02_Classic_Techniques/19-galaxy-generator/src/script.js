@@ -18,13 +18,15 @@ const scene = new THREE.Scene()
 // Galaxy
 // object that contains all the parameters
 const parameters = {}
-parameters.count = 100000
+parameters.count = 50000
 parameters.size = 0.01
 parameters.radius = 5
 parameters.branches = 3
 parameters.spin = 1
 parameters.randomness = 0.2
 parameters.randPower = 3
+parameters.insideColor = '#ff6030'
+parameters.outsideColor = '#1b7184'
 
 // move geo, material and points outside of the function
 let geo = null
@@ -43,9 +45,13 @@ const generateGalaxy = () => {
     // geometry
     geo = new THREE.BufferGeometry()
     const positions = new Float32Array(parameters.count * 3)
+    const colors = new Float32Array(parameters.count * 3)
+    const colorInside = new THREE.Color(parameters.insideColor)
+    const colorOutside = new THREE.Color(parameters.outsideColor)
 
     for (let i = 0; i < parameters.count; i++) {
         const i3 = i * 3
+        // position
         const radius = Math.random() * parameters.radius
         const spinAngle = radius * parameters.spin
         const branchAngle = (i % parameters.branches) / parameters.branches * Math.PI * 2
@@ -58,9 +64,17 @@ const generateGalaxy = () => {
         //     console.log('i -> ' + i, 'angle -> ' + branchAngle)
         // }
 
-        positions[i3 + 0] = Math.cos(branchAngle + spinAngle) * radius + randomX
+        positions[i3] = Math.cos(branchAngle + spinAngle) * radius + randomX
         positions[i3 + 1] = randomY
         positions[i3 + 2] = Math.sin(branchAngle + spinAngle) * radius + randomZ
+
+        // colors
+        const mixedColor = colorInside.clone()
+        mixedColor.lerp(colorOutside, radius / parameters.radius)
+
+        colors[i3] = mixedColor.r
+        colors[i3 + 1] = mixedColor.g
+        colors[i3 + 2] = mixedColor.b
     }
 
     geo.setAttribute(
@@ -68,12 +82,18 @@ const generateGalaxy = () => {
         new THREE.BufferAttribute(positions, 3)
     )
 
+    geo.setAttribute(
+        'color',
+        new THREE.BufferAttribute(colors, 3)
+    )
+
     // material
     material = new THREE.PointsMaterial({
         size: parameters.size,
         sizeAttenuation: true,
         depthWrite: false,
-        blending: THREE.AdditiveBlending
+        blending: THREE.AdditiveBlending,
+        vertexColors: true
     })
 
     // points
@@ -124,6 +144,9 @@ gui.add(parameters, 'randPower')
     .max(10)
     .step(0.001)
     .onFinishChange(generateGalaxy)
+
+gui.addColor(parameters, 'insideColor').onFinishChange(generateGalaxy)
+gui.addColor(parameters, 'outsideColor').onFinishChange(generateGalaxy)
 
 /**
  * Sizes
