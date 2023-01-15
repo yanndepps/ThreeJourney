@@ -62,6 +62,27 @@ window.addEventListener('resize', () => {
 	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
+// mouse hovering
+const mouse = new THREE.Vector2()
+window.addEventListener('mousemove', (_event) => {
+	mouse.x = _event.clientX / sizes.width * 2 - 1
+	mouse.y = - (_event.clientY / sizes.height) * 2 + 1
+})
+
+window.addEventListener('click', () => {
+	if (currentIntersect) {
+		if (currentIntersect.object === object1) {
+			console.log('click on object 1')
+		}
+		else if (currentIntersect.object === object2) {
+			console.log('click on object 2')
+		}
+		else if (currentIntersect.object === object3) {
+			console.log('click on object 3')
+		}
+	}
+})
+
 /**
  * Camera
  */
@@ -88,6 +109,8 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
  */
 const clock = new THREE.Clock()
 
+let currentIntersect = null
+
 const tick = () => {
 	const elapsedTime = clock.getElapsedTime()
 
@@ -97,21 +120,34 @@ const tick = () => {
 	object3.position.y = Math.sin(elapsedTime * 1.4) * 1.5
 
 	// cast a ray
+	raycaster.setFromCamera(mouse, camera)
 	// const rayOrigin = new THREE.Vector3(-3, 0, 0)
 	// const rayDirection = new THREE.Vector3(1, 0, 0)
 	// rayDirection.normalize()
 	// raycaster.set(rayOrigin, rayDirection)
 
-	// const objectsToTest = [object1, object2, object3]
-	// const intersects = raycaster.intersectObjects(objectsToTest)
+	const objectsToTest = [object1, object2, object3]
+	const intersects = raycaster.intersectObjects(objectsToTest)
 
-	// for (const object of objectsToTest) {
-	// 	object.material.color.set('#FF0000')
-	// }
+	for (const object of objectsToTest) {
+		object.material.color.set('#FF0000')
+	}
 
-	// for (const intersect of intersects) {
-	// 	intersect.object.material.color.set('#0000FF')
-	// }
+	for (const intersect of intersects) {
+		intersect.object.material.color.set('#0000FF')
+	}
+
+	if (intersects.length) {
+		if (!currentIntersect) {
+			console.log('mouse enter')
+		}
+		currentIntersect = intersects[0]
+	} else {
+		if (currentIntersect) {
+			console.log('mouse leave')
+		}
+		currentIntersect = null
+	}
 
 	// Update controls
 	controls.update()
