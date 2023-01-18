@@ -50,21 +50,6 @@ const defaultContactMaterial = new CANNON.ContactMaterial(
 )
 world.defaultContactMaterial = defaultContactMaterial
 
-// sphere
-const sphereShape = new CANNON.Sphere(0.5)
-// create the body with mass & pos
-const sphereBody = new CANNON.Body({
-	mass: 1,
-	position: new CANNON.Vec3(0, 3, 0),
-	shape: sphereShape,
-})
-// use applyLocalForce(...) to apply a small push on our sphereBody at the start
-sphereBody.applyLocalForce(
-	new CANNON.Vec3(150, 0, 0),
-	new CANNON.Vec3(0, 0, 0)
-)
-world.addBody(sphereBody)
-
 // floor
 const floorShape = new CANNON.Plane()
 const floorBody = new CANNON.Body({
@@ -76,22 +61,6 @@ floorBody.quaternion.setFromAxisAngle(
 	Math.PI * 0.5
 )
 world.addBody(floorBody)
-
-/**
- * Test sphere
- */
-const sphere = new THREE.Mesh(
-	new THREE.SphereGeometry(0.5, 32, 32),
-	new THREE.MeshStandardMaterial({
-		metalness: 0.3,
-		roughness: 0.4,
-		envMap: environmentMapTexture,
-		envMapIntensity: 0.5
-	})
-)
-sphere.castShadow = true
-sphere.position.y = 0.5
-scene.add(sphere)
 
 /**
  * Floor
@@ -172,6 +141,46 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
+// Utils
+// array that contains objects to be updated
+const objToUpd = []
+
+const createSphere = (radius, position) => {
+	// three.js mesh
+	const mesh = new THREE.Mesh(
+		new THREE.SphereGeometry(radius, 20, 20),
+		new THREE.MeshStandardMaterial({
+			metalness: 0.3,
+			roughness: 0.4,
+			envMap: environmentMapTexture
+		})
+	)
+	mesh.castShadow = true
+	mesh.position.copy(position)
+	scene.add(mesh)
+
+	// cannon.js body
+	const shape = new CANNON.Sphere(radius)
+	const body = new CANNON.Body({
+		mass: 1,
+		position: new CANNON.Vec3(0, 3, 0),
+		shape: shape,
+		material: defaultMaterial
+	})
+	body.position.copy(position)
+	world.addBody(body)
+
+	// save in objects to update ( objToUpd )
+	objToUpd.push({
+		mesh: mesh,
+		body: body
+	})
+}
+
+createSphere(0.5, { x: 0, y: 3, z: 0 })
+// createSphere(0.3, { x: 2, y: 3, z: 2 })
+// createSphere(0.7, { x: -2, y: 3, z: -2 })
+
 /**
  * Animate
  */
@@ -184,11 +193,12 @@ const tick = () => {
 	oldElapsedTime = elapsedTime
 
 	// update physics world
-	sphereBody.applyForce(new CANNON.Vec3(-0.5, 0, 0), sphereBody.position)
 	world.step(1 / 60, deltaTime, 3)
 
-	// update each position property
-	sphere.position.copy(sphereBody.position)
+	// loop & upd the mesh position with the body position
+	for (const obj of objToUpd) {
+		obj.mesh.position.copy(obj.body.position)
+	}
 
 	// Update controls
 	controls.update()
