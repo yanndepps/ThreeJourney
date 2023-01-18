@@ -8,6 +8,16 @@ import CANNON from 'cannon'
  * Debug
  */
 const gui = new dat.GUI()
+const debugObj = {}
+debugObj.createSphere = () => {
+	createSphere(Math.random() * 0.5,
+		{
+			x: (Math.random() - 0.5) * 3,
+			y: 3,
+			z: (Math.random() - 0.5) * 3
+		})
+}
+gui.add(debugObj, 'createSphere')
 
 /**
  * Base
@@ -21,7 +31,7 @@ const scene = new THREE.Scene()
 /**
  * Textures
  */
-const textureLoader = new THREE.TextureLoader()
+// const textureLoader = new THREE.TextureLoader()
 const cubeTextureLoader = new THREE.CubeTextureLoader()
 
 const environmentMapTexture = cubeTextureLoader.load([
@@ -144,17 +154,20 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 // Utils
 // array that contains objects to be updated
 const objToUpd = []
+const sphereGeo = new THREE.SphereGeometry(1, 20, 20)
+const sphereMat = new THREE.MeshStandardMaterial({
+	metalness: 0.3,
+	roughness: 0.4,
+	envMap: environmentMapTexture
+})
 
 const createSphere = (radius, position) => {
 	// three.js mesh
 	const mesh = new THREE.Mesh(
-		new THREE.SphereGeometry(radius, 20, 20),
-		new THREE.MeshStandardMaterial({
-			metalness: 0.3,
-			roughness: 0.4,
-			envMap: environmentMapTexture
-		})
+		sphereGeo,
+		sphereMat
 	)
+	mesh.scale.set(radius, radius, radius)
 	mesh.castShadow = true
 	mesh.position.copy(position)
 	scene.add(mesh)
@@ -177,7 +190,7 @@ const createSphere = (radius, position) => {
 	})
 }
 
-createSphere(0.5, { x: 0, y: 3, z: 0 })
+// createSphere(0.5, { x: 0, y: 3, z: 0 })
 // createSphere(0.3, { x: 2, y: 3, z: 2 })
 // createSphere(0.7, { x: -2, y: 3, z: -2 })
 
