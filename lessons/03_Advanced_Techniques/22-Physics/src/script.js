@@ -64,8 +64,11 @@ const environmentMapTexture = cubeTextureLoader.load([
 
 // --- Physics --- //
 const world = new CANNON.World()
-// enable broadphase for better performances
+// enable broadphase for better perfs
 world.broadphase = new CANNON.SAPBroadphase(world)
+// allow sleep for better perfs
+world.allowSleep = true
+// gravity on
 world.gravity.set(0, -9.82, 0)
 
 // materials
