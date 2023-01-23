@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import * as dat from 'lil-gui'
-
 /**
  * Base
  */
@@ -14,16 +15,37 @@ const canvas = document.querySelector('canvas.webgl')
 // Scene
 const scene = new THREE.Scene()
 
+// Models
+const dracoLoader = new DRACOLoader()
+dracoLoader.setDecoderPath('/draco/')
+
+const gltfLoader = new GLTFLoader()
+gltfLoader.setDRACOLoader(dracoLoader)
+
+let mixer = null
+gltfLoader.load(
+	'/models/Fox/glTF/Fox.gltf',
+	(gltf) => {
+		mixer = new THREE.AnimationMixer(gltf.scene)
+		const action = mixer.clipAction(gltf.animations[0])
+		action.play()
+
+		// laad and scale the group
+		gltf.scene.scale.set(0.025, 0.025, 0.025)
+		scene.add(gltf.scene)
+	},
+)
+
 /**
  * Floor
  */
 const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(10, 10),
-    new THREE.MeshStandardMaterial({
-        color: '#444444',
-        metalness: 0,
-        roughness: 0.5
-    })
+	new THREE.PlaneGeometry(10, 10),
+	new THREE.MeshStandardMaterial({
+		color: '#444444',
+		metalness: 0,
+		roughness: 0.5
+	})
 )
 floor.receiveShadow = true
 floor.rotation.x = - Math.PI * 0.5
@@ -50,23 +72,22 @@ scene.add(directionalLight)
  * Sizes
  */
 const sizes = {
-    width: window.innerWidth,
-    height: window.innerHeight
+	width: window.innerWidth,
+	height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
-    // Update sizes
-    sizes.width = window.innerWidth
-    sizes.height = window.innerHeight
+window.addEventListener('resize', () => {
+	// Update sizes
+	sizes.width = window.innerWidth
+	sizes.height = window.innerHeight
 
-    // Update camera
-    camera.aspect = sizes.width / sizes.height
-    camera.updateProjectionMatrix()
+	// Update camera
+	camera.aspect = sizes.width / sizes.height
+	camera.updateProjectionMatrix()
 
-    // Update renderer
-    renderer.setSize(sizes.width, sizes.height)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+	// Update renderer
+	renderer.setSize(sizes.width, sizes.height)
+	renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
 /**
@@ -86,7 +107,7 @@ controls.enableDamping = true
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+	canvas: canvas
 })
 renderer.shadowMap.enabled = true
 renderer.shadowMap.type = THREE.PCFSoftShadowMap
@@ -99,20 +120,24 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 const clock = new THREE.Clock()
 let previousTime = 0
 
-const tick = () =>
-{
-    const elapsedTime = clock.getElapsedTime()
-    const deltaTime = elapsedTime - previousTime
-    previousTime = elapsedTime
+const tick = () => {
+	const elapsedTime = clock.getElapsedTime()
+	const deltaTime = elapsedTime - previousTime
+	previousTime = elapsedTime
 
-    // Update controls
-    controls.update()
+	// update animation
+	if (mixer != null) {
+		mixer.update(deltaTime)
+	}
 
-    // Render
-    renderer.render(scene, camera)
+	// Update controls
+	controls.update()
 
-    // Call tick again on the next frame
-    window.requestAnimationFrame(tick)
+	// Render
+	renderer.render(scene, camera)
+
+	// Call tick again on the next frame
+	window.requestAnimationFrame(tick)
 }
 
 tick()
